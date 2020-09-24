@@ -1217,6 +1217,15 @@ process_prompts (LightDMGreeter *ldm)
         prompted = TRUE;
         prompt_active = TRUE;
         gtk_widget_grab_focus (GTK_WIDGET (username_entry));
+        /*
+            Следующая строка кода нужна для того, чтобы при запуске программы активным было именно окно пароля.
+            Если удалить предыдущую строку ( gtk_widget_grab_focus (GTK_WIDGET (username_entry));), которая
+            относится к логину, тогда поле ввода пароля потеряет свой функционал и не будет работать (будет, но не так, как надо).
+
+            А так как предыдущая строка все таки есть, она выделяет содержимое поля username_entry синим цветом.
+            пока не додумался как исправить.
+        */
+        gtk_widget_grab_focus (GTK_WIDGET (password_entry));//???
         gtk_widget_show (GTK_WIDGET (password_entry));
         return;
     }
@@ -2458,6 +2467,9 @@ Bool set_last_login(){
     FILE *saved_login;
     char buff[100];
     saved_login = fopen("test.conf","r");
+     if(saved_login == NULL)
+        return False;
+        
     fscanf(saved_login,"%s",buff);
     fclose(saved_login);
     gtk_entry_set_text(username_entry, buff); 
