@@ -20,6 +20,7 @@
 
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#include <stdio.h>
 #endif
 
 #include <glib-unix.h>
@@ -2440,6 +2441,31 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *ldm)
     set_message_label (LIGHTDM_MESSAGE_TYPE_INFO, NULL);
 }
 
+
+Bool save_last_login(){
+    FILE *login_last_file; 
+    login_last_file = fopen("test.conf", "w+");
+    if(login_last_file == NULL)
+        return False;
+
+    const gchar *login_to_save = gtk_entry_get_text(username_entry);
+    fprintf(login_last_file, login_to_save);
+    fclose(login_last_file);
+    return True;
+}
+
+Bool set_last_login(){
+    FILE *saved_login;
+    char buff[100];
+    saved_login = fopen("test.conf","r");
+    fscanf(saved_login,"%s",buff);
+    fclose(saved_login);
+    gtk_entry_set_text(username_entry, buff); 
+    return True;
+
+}
+
+
 void login_cb (GtkWidget *widget);
 G_MODULE_EXPORT
 void
@@ -2572,6 +2598,9 @@ timed_autologin_cb (LightDMGreeter *ldm)
 static void
 authentication_complete_cb (LightDMGreeter *ldm)
 {
+
+    
+
     prompt_active = FALSE;
     gtk_entry_set_text (password_entry, "");
 
@@ -2589,6 +2618,7 @@ authentication_complete_cb (LightDMGreeter *ldm)
 
     if (lightdm_greeter_get_is_authenticated (ldm))
     {
+        save_last_login();
         if (prompted)
             start_session ();
         else
@@ -3359,6 +3389,7 @@ main (int argc, char **argv)
 
     if (lightdm_greeter_get_hide_users_hint (greeter))
     {
+        set_last_login();
         set_user_image (NULL);
         start_authentication ("*other");
     }
